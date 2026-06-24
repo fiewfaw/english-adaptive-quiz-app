@@ -14,6 +14,14 @@ Single-file adaptive quiz app for EPG 600 / EnglishScore Core Skills practice.
 
 Open `index.html` directly in a browser, or serve this folder with any static file server.
 
+## Editing Quiz Content
+
+Khun Ann / Hermes should edit quiz content in `questions.js`.
+
+- Guide: `CONTENT_GUIDE.md`
+- Handoff note: `ANN_CONTENT_HANDOFF.md`
+- Validator: `node scripts/validate-questions.js`
+
 ## Assets
 
 - `assets/icon.png` app icon
