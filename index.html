@@ -308,7 +308,7 @@ body.glow-on .glow-toggle .led{background:var(--gold);box-shadow:0 0 10px var(--
           <div class="ic icon-wrap" style="--part-accent:var(--icon-purple);--part-bg:var(--icon-lavender)" aria-hidden="true"><svg class="ui-icon"><use href="#i-book-open"></use></svg></div><div class="nm">Reading</div><div class="ds">การอ่าน</div>
         </button>
         <button class="part full" data-part="listening" onclick="pickPart(this,'listening')">
-          <div class="ic icon-wrap" style="--part-accent:var(--icon-purple);--part-bg:var(--icon-lavender)" aria-hidden="true"><svg class="ui-icon"><use href="#i-headphones"></use></svg></div><div class="nm">Listening</div><div class="ds">การฟัง (สคริปต์ — ยังไม่มีเสียงจริง)</div>
+          <div class="ic icon-wrap" style="--part-accent:var(--icon-purple);--part-bg:var(--icon-lavender)" aria-hidden="true"><svg class="ui-icon"><use href="#i-headphones"></use></svg></div><div class="nm">Listening</div><div class="ds">การฟัง (มีเสียงจริง 🔊)</div>
         </button>
       </div>
       <div style="height:14px"></div>
@@ -338,8 +338,12 @@ body.glow-on .glow-toggle .led{background:var(--gold);box-shadow:0 0 10px var(--
       <div class="passage" id="q-passage" style="display:none"></div>
       <div class="audio-box" id="q-audio" style="display:none">
         <div class="hd"><svg class="ui-icon" aria-hidden="true"><use href="#i-headphones"></use></svg><span>Listening</span></div>
-        <span class="toggle" onclick="document.getElementById('q-audio').classList.toggle('open')">▸ แสดง/ซ่อนสคริปต์</span>
+        <div class="audio-controls" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px">
+          <button type="button" id="q-audio-btn" onclick="playClip()" style="display:inline-flex;align-items:center;gap:7px;background:var(--amber);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:800;font-size:13px;cursor:pointer"><svg class="ui-icon" aria-hidden="true"><use href="#i-headphones"></use></svg><span id="q-audio-btn-label">เล่นเสียง</span></button>
+          <span class="toggle" onclick="document.getElementById('q-audio').classList.toggle('open')" style="margin-top:0">▸ แสดง/ซ่อนสคริปต์</span>
+        </div>
         <div class="script" id="q-script"></div>
+        <audio id="q-audioel" preload="none"></audio>
       </div>
       <div class="prompt" id="q-prompt">—</div>
       <div class="choices" id="q-choices"></div>
@@ -567,11 +571,32 @@ function loadQuestion(){
   const pas=document.getElementById("q-passage");
   if(cur.passage){pas.style.display="block";pas.textContent=cur.passage;}else pas.style.display="none";
   const au=document.getElementById("q-audio");
-  if(cur.audioScript){au.style.display="block";au.classList.remove("open");document.getElementById("q-script").textContent=cur.audioScript;}else au.style.display="none";
+  const auel=document.getElementById("q-audioel");
+  const aulbl=document.getElementById("q-audio-btn-label");
+  if(cur.audioScript){
+    au.style.display="block";au.classList.remove("open");
+    document.getElementById("q-script").textContent=cur.audioScript;
+    try{auel.pause();}catch(e){}
+    auel.src="assets/audio/"+cur.id+".mp3";
+    try{auel.load();}catch(e){}
+    aulbl.textContent="เล่นเสียง";
+    auel.onended=()=>{aulbl.textContent="🔁 เล่นอีกครั้ง";};
+  }else{
+    au.style.display="none";
+    try{auel.pause();auel.removeAttribute("src");auel.load();}catch(e){}
+  }
 
   document.getElementById("q-prompt").textContent=cur.prompt;
   const ch=document.getElementById("q-choices");
   ch.innerHTML=cur.choices.map((c,i)=>`<button class="choice" data-i="${i}" onclick="answer(${i})"><span class="key">${"ABCD"[i]}</span><span>${c}</span></button>`).join("");
+}
+function playClip(){
+  const a=document.getElementById("q-audioel");
+  const lbl=document.getElementById("q-audio-btn-label");
+  if(!a.getAttribute("src"))return;
+  if(a.paused){
+    a.play().then(()=>{lbl.textContent="⏸ หยุด";}).catch(()=>{lbl.textContent="เล่นไม่ได้ — แตะอีกครั้ง";});
+  }else{a.pause();lbl.textContent="▶ เล่นต่อ";}
 }
 function answer(i){
   if(answered)return; answered=true;
