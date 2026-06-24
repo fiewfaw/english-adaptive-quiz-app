@@ -21,6 +21,8 @@ Khun Ann / Hermes should edit quiz content in `questions.js`.
 - Guide: `CONTENT_GUIDE.md`
 - Handoff note: `ANN_CONTENT_HANDOFF.md`
 - Validator: `node scripts/validate-questions.js`
+- Publish guide: `ANN_PUBLISH_GUIDE.md`
+- Publish command: `node scripts/publish-content.js`
 
 ## Assets
 

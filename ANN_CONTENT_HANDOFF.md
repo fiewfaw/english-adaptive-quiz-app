@@ -6,6 +6,28 @@
 
 - Repo: https://github.com/fiewfaw/english-adaptive-quiz-app
 - Live app: https://fiewfaw.github.io/english-adaptive-quiz-app/
+- Ann publish guide: `ANN_PUBLISH_GUIDE.md`
+
+## Ann Publish Flow
+
+Ann can publish content updates after Fiew gives Hermes/Ann a fine-grained GitHub token stored as `GITHUB_TOKEN`.
+
+Recommended token boundary:
+
+- Repo: `fiewfaw/english-adaptive-quiz-app` only
+- Permission: `Contents: Read and write`
+- Expiration: 30 to 90 days
+- Never save the token in this repo, vault notes, or chat
+
+Ann's command flow:
+
+```powershell
+node scripts\validate-questions.js
+node scripts\publish-content.js --dry-run
+node scripts\publish-content.js
+```
+
+The publish script updates only `questions.js` and verifies the live GitHub Pages copy. Full instructions are in `ANN_PUBLISH_GUIDE.md`.
 
 ## What Changed
 

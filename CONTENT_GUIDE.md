@@ -89,6 +89,16 @@
 - อย่าเปลี่ยนชื่อ field
 - อย่าลืม comma ระหว่างข้อใน array
 
+## Publishing
+
+ถ้าแอนมี `GITHUB_TOKEN` สำหรับ repo นี้แล้ว ให้ publish ด้วย:
+
+```bash
+node scripts/publish-content.js
+```
+
+อ่านรายละเอียดการตั้ง token และขั้นตอน publish ใน `ANN_PUBLISH_GUIDE.md`
+
 ## Validation
 
 รันจาก root ของ repo:
