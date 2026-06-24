@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>English Adaptive Quiz — EPG 600 / EnglishScore Core Skills</title>
+<link rel="icon" type="image/png" href="assets/icon.png">
+<style>
+:root{
+  --bg:#F6F8FC; --bg-2:#EDF4F7; --card:#FFFFFF; --ink:#121625; --ink-2:#465066; --muted:#8A93A8;
+  --line:#E2E7F0; --gold:#D9A441; --accent:#5B5FEF; --accent-2:#0891B2; --accent-soft:#EEF0FE;
+  --icon-purple:#6D5DF5; --icon-purple-2:#8B5CF6; --icon-purple-dark:#4F46E5;
+  --icon-lavender:#F1EEFF; --icon-lavender-2:#E8E3FF; --icon-glow:rgba(109,93,245,.30);
+  --green:#16A34A; --green-soft:#E8F7EE; --red:#DC2626; --red-soft:#FDECEC;
+  --amber:#D97706; --amber-soft:#FFF3DB; --grammar:#5B5FEF; --reading:#0891B2; --listening:#D97706;
+  --shadow:0 10px 30px rgba(18,22,37,.07); --shadow-sm:0 4px 14px rgba(18,22,37,.055); --shadow-lg:0 18px 52px rgba(18,22,37,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Sarabun","Noto Sans Thai",sans-serif;
+  background:linear-gradient(180deg,var(--bg),var(--bg-2));color:var(--ink);line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.study-shell{min-height:100vh}
+.app{max-width:460px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;background:linear-gradient(180deg,rgba(255,255,255,.72),rgba(255,255,255,.18));box-shadow:0 0 0 1px rgba(255,255,255,.55)}
+.mono{font-family:"JetBrains Mono","SFMono-Regular",Menlo,monospace}
+
+/* ---------- Top bar ---------- */
+.topbar{padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(246,248,252,.86);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid rgba(226,231,240,.78)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{width:38px;height:38px;border-radius:12px;object-fit:cover;box-shadow:0 8px 20px rgba(91,95,239,.25);display:block}
+.brand .t{font-weight:800;font-size:15px;letter-spacing:-.01em}
+.brand .s{font-size:11px;color:var(--muted)}
+.icon-btn{width:38px;height:38px;border-radius:12px;border:1px solid rgba(226,231,240,.95);background:rgba(255,255,255,.9);color:var(--ink-2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.15s;box-shadow:var(--shadow-sm)}
+.icon-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);transform:translateY(-1px)}
+.icon-sprite{position:absolute;width:0;height:0;overflow:hidden}
+.ui-icon{width:18px;height:18px;display:inline-block;vertical-align:-.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.icon-btn .ui-icon{width:18px;height:18px}
+.btn .ui-icon{width:17px;height:17px;margin-left:6px;vertical-align:-3px}
+.btn .ui-icon:first-child{margin-left:0;margin-right:7px}
+.sec-h .ttl .ui-icon{width:17px;height:17px;color:var(--accent)}
+.purple-icon-system .sec-h .ttl .ui-icon,
+.purple-icon-system .audio-box .hd .ui-icon,
+.purple-icon-system .sheet h3 .ui-icon,
+.purple-icon-system .btn-ghost .ui-icon{color:var(--icon-purple)}
+.purple-icon-system .icon-btn:not(:hover){color:var(--icon-purple);background:linear-gradient(180deg,#fff,var(--icon-lavender));border-color:rgba(109,93,245,.20)}
+@keyframes icon-breathe{0%,100%{box-shadow:0 0 0 0 rgba(109,93,245,.10),0 8px 18px rgba(109,93,245,.14)}50%{box-shadow:0 0 0 5px rgba(109,93,245,.08),0 10px 24px rgba(109,93,245,.26)}}
+@keyframes icon-shimmer{0%{transform:translateX(-130%) rotate(18deg)}100%{transform:translateX(130%) rotate(18deg)}}
+@media (prefers-reduced-motion:reduce){
+  .purple-icon-system .part.sel .ic,
+  .purple-icon-system .nav button.on .i{animation:none!important}
+  .purple-icon-system .part.sel .ic::after{display:none}
+}
+
+/* ---------- Views ---------- */
+.view{flex:1;padding:8px 18px 112px;display:none;animation:fade .35s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- Hero banner ---------- */
+.hero-banner{width:100%;display:block;border-radius:18px;margin:2px 0 12px;box-shadow:var(--shadow);aspect-ratio:16/9;object-fit:cover;border:1px solid rgba(255,255,255,.8)}
+
+/* ---------- Progress hero ---------- */
+.hero{background:linear-gradient(135deg,#111827,#243B6B 54%,#4F46E5);border-radius:20px;padding:20px;color:#fff;box-shadow:var(--shadow-lg);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.18)}
+.hero::after{content:"";position:absolute;inset:auto 0 0 0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)}
+.hero .lab{font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.76;font-weight:800}
+.hero .big{display:flex;align-items:baseline;gap:8px;margin-top:2px}
+.hero .big .n{font-size:42px;font-weight:800;letter-spacing:-.02em}
+.hero .big .u{font-size:14px;opacity:.85}
+.hero .bandrow{display:flex;justify-content:space-between;font-size:11px;opacity:.86;margin:15px 0 7px}
+.track{height:10px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.track .fill{height:100%;background:linear-gradient(90deg,#FBBF24,#22C55E,#38BDF8);border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.hero .note{font-size:12px;opacity:.85;margin-top:10px}
+.exam-brief{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.exam-brief .brief-item{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.09);border-radius:13px;padding:9px 8px;min-width:0}
+.brief-item .k{font-size:9px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;font-weight:800}
+.brief-item .v{font-size:12px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Stat row ---------- */
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stat{background:rgba(255,255,255,.92);border:1px solid rgba(226,231,240,.92);border-radius:16px;padding:13px 12px;text-align:left;box-shadow:var(--shadow-sm)}
+.stat.metric-chip{position:relative;overflow:hidden}
+.stat.metric-chip::before{content:"";display:block;width:28px;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2));margin-bottom:7px}
+.stat .n{font-size:23px;font-weight:850;letter-spacing:-.02em;line-height:1}
+.stat .l{font-size:10.5px;color:var(--muted);margin-top:5px;font-weight:700}
+
+/* ---------- Section ---------- */
+.sec{margin-top:22px}
+.sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-h .ttl{font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px}
+.sec-h .lnk{font-size:12px;color:var(--accent);cursor:pointer;font-weight:600}
+.card{background:rgba(255,255,255,.94);border:1px solid rgba(226,231,240,.95);border-radius:18px;padding:16px;box-shadow:var(--shadow-sm)}
+.focus-panel{background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(239,246,255,.92));border:1px solid rgba(226,231,240,.95);border-radius:18px;padding:15px 15px 13px;box-shadow:var(--shadow-sm)}
+.focus-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.focus-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:850;color:var(--accent)}
+.focus-title{font-size:14px;font-weight:850;margin-top:2px}
+.focus-copy{font-size:12px;color:var(--ink-2);margin-top:3px}
+.focus-score{min-width:74px;text-align:center;border-radius:14px;background:#111827;color:#fff;padding:8px 10px}
+.focus-score .n{font-size:18px;font-weight:850;line-height:1}
+.focus-score .l{font-size:9px;opacity:.7;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.practice-plan{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.practice-step{border:1px solid rgba(226,231,240,.88);background:#fff;border-radius:13px;padding:9px 8px}
+.practice-step .k{font-size:10px;font-weight:850;color:var(--muted)}
+.practice-step .v{font-size:12px;font-weight:800;margin-top:1px;color:var(--ink)}
+
+/* ---------- Weakness map ---------- */
+.wk{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--line)}
+.wk:last-child{border-bottom:none}
+.wk .dot{width:10px;height:10px;border-radius:50%;flex:none;box-shadow:0 0 0 4px rgba(226,231,240,.45)}
+.wk .nm{flex:1;font-size:13px;font-weight:600;text-transform:capitalize}
+.wk .bar{width:88px;height:8px;background:#EEF2F7;border-radius:999px;overflow:hidden;flex:none;box-shadow:inset 0 0 0 1px rgba(226,231,240,.7)}
+.wk .bar i{display:block;height:100%;border-radius:999px}
+.wk .pct{width:38px;text-align:right;font-size:12px;color:var(--ink-2);font-weight:700}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
+
+/* ---------- Part picker ---------- */
+.parts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px}
+.part{border:1.5px solid rgba(226,231,240,.95);background:rgba(255,255,255,.94);border-radius:16px;padding:14px 14px;cursor:pointer;transition:.15s;text-align:left;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+.part::after{content:"";position:absolute;left:14px;right:14px;top:0;height:3px;border-radius:0 0 999px 999px;background:transparent}
+.part:hover{border-color:var(--part-accent,var(--accent));transform:translateY(-1px);box-shadow:var(--shadow)}
+.part.sel{border-color:var(--part-accent,var(--accent));background:linear-gradient(180deg,#fff,var(--part-bg,var(--accent-soft)))}
+.part.sel::after{background:var(--part-accent,var(--accent))}
+.part .ic{width:36px;height:36px;border-radius:13px;background:var(--part-bg,var(--accent-soft));color:var(--part-accent,var(--accent));display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
+.part .ic .ui-icon{width:20px;height:20px}
+.part.sel .ic{background:#fff;color:var(--part-accent,var(--accent))}
+.purple-icon-system .part{--part-accent:var(--icon-purple)!important;--part-bg:var(--icon-lavender)!important}
+.purple-icon-system .part .ic{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--icon-lavender),var(--icon-lavender-2));color:var(--icon-purple);box-shadow:inset 0 0 0 1px rgba(109,93,245,.12)}
+.purple-icon-system .part.sel .ic{background:#fff;color:var(--icon-purple-dark);animation:icon-breathe 2.8s ease-in-out infinite}
+.purple-icon-system .part.sel .ic::after{content:"";position:absolute;top:-35%;bottom:-35%;width:40%;left:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);opacity:.62;animation:icon-shimmer 3.2s ease-in-out infinite;pointer-events:none}
+.part .nm{font-weight:800;font-size:14px;margin-top:6px}
+.part .ds{font-size:11px;color:var(--muted)}
+.part.full{grid-column:1/-1}
+
+/* ---------- Buttons ---------- */
+.btn{display:block;width:100%;border:none;border-radius:15px;padding:16px;font-size:15px;font-weight:850;cursor:pointer;transition:.15s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#4F46E5,#0891B2);color:#fff;box-shadow:0 12px 26px rgba(8,145,178,.24)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(79,70,229,.28)}
+.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+
+/* ---------- Quiz ---------- */
+.qtop{display:flex;align-items:center;justify-content:space-between;margin:7px 0 14px}
+.qprog{flex:1;height:9px;background:#E7ECF4;border-radius:999px;overflow:hidden;margin:0 12px;box-shadow:inset 0 0 0 1px rgba(226,231,240,.8)}
+.qprog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:999px;transition:.4s}
+.qmeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.badge{font-size:11px;font-weight:850;padding:5px 10px;border-radius:999px;letter-spacing:.02em;border:1px solid transparent}
+.badge.cefr{background:var(--ink);color:#fff}
+.diff{display:flex;gap:3px;align-items:center}
+.diff i{width:8px;height:8px;border-radius:50%;background:#D7DDEA}
+.diff i.on{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.qcard{background:rgba(255,255,255,.96);border:1px solid rgba(226,231,240,.95);border-radius:20px;padding:20px;box-shadow:var(--shadow);position:relative}
+.quiz-surface::before{content:"";position:absolute;left:20px;right:20px;top:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2),var(--gold));border-radius:0 0 999px 999px}
+.passage{background:#F8FAFC;border:1px solid var(--line);border-left:4px solid var(--reading);border-radius:13px;padding:14px 15px;font-size:13.5px;color:var(--ink-2);margin-bottom:14px;white-space:pre-wrap}
+.audio-box{background:linear-gradient(180deg,#FFF8EC,#FFFFFF);border:1px solid #F3E2C0;border-radius:13px;padding:12px 14px;margin-bottom:14px}
+.audio-box .hd{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--amber)}
+.audio-box .hd .ui-icon{width:16px;height:16px}
+.audio-box .script{font-size:13.5px;color:var(--ink-2);margin-top:8px;white-space:pre-wrap;display:none}
+.audio-box.open .script{display:block}
+.audio-box .toggle{font-size:11px;color:var(--amber);cursor:pointer;font-weight:700;margin-top:6px;display:inline-block}
+.prompt{font-size:16px;font-weight:800;line-height:1.52;margin-bottom:16px;letter-spacing:0}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{display:flex;align-items:flex-start;gap:12px;border:1.5px solid var(--line);background:#fff;border-radius:15px;padding:14px;cursor:pointer;transition:.13s;text-align:left;font-size:14.5px;font-family:inherit;color:var(--ink);box-shadow:0 2px 8px rgba(18,22,37,.025)}
+.choice:hover{border-color:var(--accent);background:#F8FAFF;transform:translateY(-1px)}
+.choice .key{width:26px;height:26px;border-radius:9px;background:#EEF2F7;color:var(--ink-2);font-weight:850;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.choice.correct{border-color:var(--green);background:var(--green-soft)}
+.choice.correct .key{background:var(--green);color:#fff}
+.choice.wrong{border-color:var(--red);background:var(--red-soft)}
+.choice.wrong .key{background:var(--red);color:#fff}
+.choice:disabled{cursor:default}
+.choice.dim{opacity:.55}
+
+/* ---------- Feedback ---------- */
+.fb{margin-top:16px;border-radius:15px;padding:14px 15px;animation:fade .25s ease;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--green-soft);border:1px solid #BBE7C7}
+.fb.no{background:var(--red-soft);border:1px solid #F3C9C9}
+.fb .h{font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.fb .h .ui-icon{width:18px;height:18px}
+.fb.ok .h{color:var(--green)}
+.fb.no .h{color:var(--red)}
+.fb .ex{font-size:13.5px;color:var(--ink-2)}
+.fb .tag{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* ---------- Drawer / sheet ---------- */
+.sheet{position:fixed;inset:0;background:rgba(15,17,30,.45);display:none;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(5px)}
+.sheet.show{display:flex;animation:fade .2s ease}
+.sheet .panel{background:#fff;width:100%;max-width:460px;border-radius:24px 24px 0 0;padding:22px 20px 30px;max-height:80vh;overflow:auto;box-shadow:0 -18px 50px rgba(18,22,37,.18)}
+.sheet h3{font-size:17px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.sheet h3 .ui-icon{width:19px;height:19px;color:var(--accent)}
+.sheet p{font-size:13px;color:var(--ink-2);margin-bottom:14px}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:10px 0;border-bottom:1px solid var(--line)}
+.kv span:last-child{font-weight:700}
+
+/* ---------- Bottom nav ---------- */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-top:1px solid rgba(226,231,240,.92);display:flex;z-index:60;box-shadow:0 -8px 30px rgba(18,22,37,.08)}
+.nav button{flex:1;border:none;background:none;padding:10px 0 calc(10px + env(safe-area-inset-bottom));cursor:pointer;color:var(--muted);font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:inherit;position:relative}
+.nav button.on::before{content:"";position:absolute;top:0;width:28px;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.nav button .i{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.nav button .i .ui-icon{width:20px;height:20px}
+.nav button.on{color:var(--accent)}
+.purple-icon-system .nav button .i{width:28px;height:28px;border-radius:12px;color:var(--icon-purple);background:transparent;transition:.18s}
+.purple-icon-system .nav button.on{color:var(--icon-purple-dark)}
+.purple-icon-system .nav button.on .i{background:linear-gradient(180deg,#fff,var(--icon-lavender));animation:icon-breathe 3s ease-in-out infinite;box-shadow:0 6px 16px rgba(109,93,245,.18)}
+.purple-icon-system .nav button.on::before{background:linear-gradient(90deg,var(--icon-purple),var(--icon-purple-2))}
+
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:300;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ---------- Glow Spotlight Cursor (vault drop-in, theme=indigo) ---------- */
+.glow-cursor{position:fixed;top:0;left:0;width:14px;height:14px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 14px #6366F1,0 0 36px rgba(99,102,241,.65),0 0 70px rgba(99,102,241,.35);opacity:0;visibility:hidden;transition:opacity .25s ease,width .15s ease,height .15s ease,background .15s ease}
+.glow-cursor::before{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;background:radial-gradient(circle,rgba(99,102,241,.32) 0%,rgba(99,102,241,.08) 38%,transparent 65%);border-radius:50%;animation:glow-pulse 1.8s ease-in-out infinite;pointer-events:none}
+@keyframes glow-pulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.22)}}
+body.glow-on{cursor:none}
+body.glow-on *{cursor:none !important}
+body.glow-on .glow-cursor{opacity:1;visibility:visible}
+body.glow-on .glow-cursor.click{width:24px;height:24px;background:#fff;box-shadow:0 0 24px #fff,0 0 50px var(--gold),0 0 80px rgba(99,102,241,.6)}
+.glow-toggle{position:fixed;bottom:78px;right:16px;background:#fff;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;cursor:pointer;z-index:300;transition:all .2s ease;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.glow-toggle:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.glow-toggle .led{width:9px;height:9px;border-radius:50%;background:#bbb;transition:all .2s ease}
+body.glow-on .glow-toggle{background:var(--ink);color:var(--gold);border-color:var(--gold)}
+body.glow-on .glow-toggle .led{background:var(--gold);box-shadow:0 0 10px var(--gold),0 0 20px rgba(99,102,241,.6);animation:led-pulse 1.4s ease-in-out infinite}
+@keyframes led-pulse{0%,100%{opacity:.85}50%{opacity:1}}
+</style>
+</head>
+<body class="study-shell purple-icon-system">
+<svg class="icon-sprite" aria-hidden="true">
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.2a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.2a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.2a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.2a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h8l-1 8 11-14h-8l1-6Z"/></symbol>
+  <symbol id="i-pen-line" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></symbol>
+  <symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 5a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v16a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2V5Z"/><path d="M21 5a2 2 0 0 0-2-2h-5a2 2 0 0 0-2 2v16a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2V5Z"/></symbol>
+  <symbol id="i-headphones" viewBox="0 0 24 24"><path d="M3 14a9 9 0 0 1 18 0"/><path d="M21 15v2a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z"/><path d="M3 15v2a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2Z"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"/><path d="M9 3v15"/><path d="M15 6v15"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10.5 9-7.5 9 7.5"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16V5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5"/><path d="M14 11v5"/></symbol>
+</svg>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <img class="logo" src="assets/icon.png" alt="English Adaptive">
+      <div><div class="t">English Adaptive</div><div class="s">EPG 600 · EnglishScore Core Skills</div></div>
+    </div>
+    <button class="icon-btn" onclick="openStats()" title="สถิติ &amp; รีเซ็ต" aria-label="สถิติและรีเซ็ต"><svg class="ui-icon" aria-hidden="true"><use href="#i-settings"></use></svg></button>
+  </div>
+
+  <!-- ============ HOME ============ -->
+  <section class="view active" id="view-home">
+    <img class="hero-banner" src="assets/hero.jpg" alt="ไต่ระดับภาษาอังกฤษ A2 สู่ B2">
+    <div class="hero">
+      <div class="lab">Progress toward B2</div>
+      <div class="big"><span class="n" id="h-score">—</span><span class="u" id="h-band">เริ่มทำแบบฝึกเพื่อประเมิน</span></div>
+      <div class="bandrow"><span>A2</span><span>B1</span><span>B2 · 400+</span></div>
+      <div class="track"><i class="fill" id="h-fill" style="width:0%"></i></div>
+      <div class="note" id="h-note">เป้าหมาย: ผ่าน EnglishScore B2 / 400+ สำหรับ EPG 600</div>
+      <div class="exam-brief" aria-label="Exam brief">
+        <div class="brief-item"><div class="k">Target</div><div class="v">B2 / 400+</div></div>
+        <div class="brief-item"><div class="k">Mode</div><div class="v">Adaptive</div></div>
+        <div class="brief-item"><div class="k">Focus</div><div class="v" id="brief-focus">Mixed</div></div>
+      </div>
+    </div>
+
+    <div class="statrow">
+      <div class="stat metric-chip"><div class="n" id="s-ans">0</div><div class="l">ทำแล้ว</div></div>
+      <div class="stat metric-chip"><div class="n" id="s-acc">—</div><div class="l">ความแม่นยำ</div></div>
+      <div class="stat metric-chip"><div class="n" id="s-rev">0</div><div class="l">คิวทบทวน</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="focus-panel">
+        <div class="focus-top">
+          <div>
+            <div class="focus-label">Today's focus</div>
+            <div class="focus-title" id="focus-title">Start with an adaptive mix</div>
+            <div class="focus-copy" id="focus-copy">ทำสั้น ๆ 10-12 นาที ระบบจะหา weak spot ให้เอง</div>
+          </div>
+          <div class="focus-score">
+            <div class="n" id="focus-score">B2</div>
+            <div class="l">Goal</div>
+          </div>
+        </div>
+        <div class="practice-plan">
+          <div class="practice-step"><div class="k">Warm-up</div><div class="v">4 mixed</div></div>
+          <div class="practice-step"><div class="k">Attack</div><div class="v" id="plan-attack">Weak skill</div></div>
+          <div class="practice-step"><div class="k">Close</div><div class="v">Review queue</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><div class="ttl"><svg class="ui-icon" aria-hidden="true"><use href="#i-target"></use></svg><span>Today's drill</span></div></div>
+      <div class="parts">
+        <button class="part full sel" data-part="all" onclick="pickPart(this,'all')">
+          <div class="ic icon-wrap" style="--part-accent:var(--icon-purple);--part-bg:var(--icon-lavender)" aria-hidden="true"><svg class="ui-icon"><use href="#i-zap"></use></svg></div><div class="nm">ฝึกแบบปรับอัตโนมัติ (แนะนำ)</div>
+          <div class="ds">ระบบเลือกข้อจากจุดอ่อน + ปรับความยากให้เอง</div>
+        </button>
+        <button class="part" data-part="grammar_vocab" onclick="pickPart(this,'grammar_vocab')">
+          <div class="ic icon-wrap" style="--part-accent:var(--icon-purple);--part-bg:var(--icon-lavender)" aria-hidden="true"><svg class="ui-icon"><use href="#i-pen-line"></use></svg></div><div class="nm">Grammar &amp; Vocab</div><div class="ds">ไวยากรณ์ + คำศัพท์</div>
+        </button>
+        <button class="part" data-part="reading" onclick="pickPart(this,'reading')">
+          <div class="ic icon-wrap" style="--part-accent:var(--icon-purple);--part-bg:var(--icon-lavender)" aria-hidden="true"><svg class="ui-icon"><use href="#i-book-open"></use></svg></div><div class="nm">Reading</div><div class="ds">การอ่าน</div>
+        </button>
+        <button class="part full" data-part="listening" onclick="pickPart(this,'listening')">
+          <div class="ic icon-wrap" style="--part-accent:var(--icon-purple);--part-bg:var(--icon-lavender)" aria-hidden="true"><svg class="ui-icon"><use href="#i-headphones"></use></svg></div><div class="nm">Listening</div><div class="ds">การฟัง (สคริปต์ — ยังไม่มีเสียงจริง)</div>
+        </button>
+      </div>
+      <div style="height:14px"></div>
+      <button class="btn btn-primary" onclick="startQuiz()">เริ่มทำแบบฝึก <svg class="ui-icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></button>
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><div class="ttl"><svg class="ui-icon" aria-hidden="true"><use href="#i-map"></use></svg><span>Weakness map</span></div><span class="lnk" id="wk-lnk" onclick="drillWeak()" style="display:none">ฝึกจุดอ่อน</span></div>
+      <div class="card" id="wk-list"><div class="empty">ยังไม่มีข้อมูล — ทำแบบฝึกสักหน่อยเพื่อให้ระบบรู้จุดอ่อน</div></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="view" id="view-quiz">
+    <div class="qtop">
+      <button class="icon-btn" onclick="goHome()" title="ออก" aria-label="กลับหน้าหลัก"><svg class="ui-icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg></button>
+      <div class="qprog"><i id="q-prog" style="width:0%"></i></div>
+      <div class="mono" style="font-size:12px;color:var(--ink-2)" id="q-count">0</div>
+    </div>
+    <div class="qmeta">
+      <span class="badge" id="q-part" style="background:var(--accent-soft);color:var(--accent)">—</span>
+      <span class="badge cefr" id="q-cefr">—</span>
+      <span class="badge" id="q-skill" style="background:#F0F1F7;color:var(--ink-2)">—</span>
+      <span class="diff" id="q-diff" title="ระดับความยาก"></span>
+    </div>
+    <div class="qcard quiz-surface">
+      <div class="passage" id="q-passage" style="display:none"></div>
+      <div class="audio-box" id="q-audio" style="display:none">
+        <div class="hd"><svg class="ui-icon" aria-hidden="true"><use href="#i-headphones"></use></svg><span>Listening</span></div>
+        <span class="toggle" onclick="document.getElementById('q-audio').classList.toggle('open')">▸ แสดง/ซ่อนสคริปต์</span>
+        <div class="script" id="q-script"></div>
+      </div>
+      <div class="prompt" id="q-prompt">—</div>
+      <div class="choices" id="q-choices"></div>
+      <div class="fb" id="q-fb"><div class="h" id="q-fb-h"></div><div class="ex" id="q-fb-ex"></div><div class="tag" id="q-fb-tag"></div></div>
+    </div>
+    <div style="height:16px"></div>
+    <button class="btn btn-primary" id="q-next" onclick="nextQuestion()" style="display:none">ข้อถัดไป <svg class="ui-icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></button>
+  </section>
+
+  <!-- bottom nav -->
+  <nav class="nav">
+    <button class="on" id="nav-home" onclick="goHome()"><span class="i"><svg class="ui-icon" aria-hidden="true"><use href="#i-home"></use></svg></span>หน้าหลัก</button>
+    <button id="nav-drill" onclick="startQuiz()"><span class="i"><svg class="ui-icon" aria-hidden="true"><use href="#i-zap"></use></svg></span>ฝึก</button>
+    <button id="nav-stats" onclick="openStats()"><span class="i"><svg class="ui-icon" aria-hidden="true"><use href="#i-chart"></use></svg></span>สถิติ</button>
+  </nav>
+</div>
+
+<!-- stats sheet -->
+<div class="sheet" id="sheet" onclick="if(event.target===this)closeSheet()">
+  <div class="panel">
+    <h3><svg class="ui-icon" aria-hidden="true"><use href="#i-chart"></use></svg><span>สถิติการเรียน</span></h3>
+    <p>ข้อมูลเก็บในเครื่อง (localStorage) — ไม่ส่งออกที่ไหน</p>
+    <div class="kv"><span>ทำทั้งหมด</span><span id="st-ans">0</span></div>
+    <div class="kv"><span>ตอบถูก</span><span id="st-cor">0</span></div>
+    <div class="kv"><span>ความแม่นยำ</span><span id="st-acc">—</span></div>
+    <div class="kv"><span>ระดับความยากปัจจุบัน</span><span id="st-diff">—</span></div>
+    <div class="kv"><span>คิวทบทวน</span><span id="st-rev">0</span></div>
+    <div class="kv"><span>คะแนนประเมิน B2</span><span id="st-b2">—</span></div>
+    <div style="height:18px"></div>
+    <button class="btn btn-ghost" onclick="resetAll()"><svg class="ui-icon" aria-hidden="true"><use href="#i-trash"></use></svg>ล้างข้อมูลทั้งหมด</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-ghost" onclick="closeSheet()">ปิด</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- glow cursor (vault drop-in) -->
+<div class="glow-cursor" id="glow-cursor"></div>
+<button class="glow-toggle" onclick="toggleGlow()" title="เปิด/ปิด spotlight cursor (กด G)"><span class="led"></span> SPOTLIGHT</button>
+
+<script>
+/* ============================================================
+   English Adaptive Quiz — prototype rebuild (Claude Code)
+   Scope: EPG 600 / EnglishScore Core Skills — Grammar&Vocab, Reading, Listening
+   NO Speaking. Adaptive MCQ + spaced review + weakness-first.
+   Hand back to คุณแอน for content/logic refinement.
+   ============================================================ */
+
+/* ---------- Seed question bank (small — แอนจะขยายต่อ) ---------- */
+const BANK = [
+  // ---- Grammar & Vocab ----
+  {id:"g01",part:"grammar_vocab",skillTag:"tenses",cefrLevel:"A2",difficulty:1,prompt:"She ____ to the market every Sunday.",choices:["go","goes","going","gone"],answerIndex:1,explanation:"Present simple กับประธานเอกพจน์ (she) เติม -s → goes",ref:"CEFR A2"},
+  {id:"g02",part:"grammar_vocab",skillTag:"prepositions",cefrLevel:"A2",difficulty:1,prompt:"The meeting is ____ Monday morning.",choices:["in","on","at","by"],answerIndex:1,explanation:"ใช้ on กับวันในสัปดาห์ → on Monday",ref:"CEFR A2"},
+  {id:"g03",part:"grammar_vocab",skillTag:"articles",cefrLevel:"A2",difficulty:2,prompt:"He is ____ honest man.",choices:["a","an","the","—"],answerIndex:1,explanation:"honest ออกเสียงสระ /ɒ/ (h เงียบ) จึงใช้ an",ref:"CEFR A2"},
+  {id:"g04",part:"grammar_vocab",skillTag:"tenses",cefrLevel:"B1",difficulty:3,prompt:"By the time we arrived, the film ____.",choices:["already started","has already started","had already started","was already starting"],answerIndex:2,explanation:"เหตุเกิดก่อนอีกเหตุในอดีต ใช้ past perfect → had already started",ref:"CEFR B1"},
+  {id:"g05",part:"grammar_vocab",skillTag:"conditionals",cefrLevel:"B1",difficulty:3,prompt:"If I ____ more time, I would learn the guitar.",choices:["have","had","will have","would have"],answerIndex:1,explanation:"Second conditional (สมมติปัจจุบัน): if + past simple, would + verb → had",ref:"CEFR B1"},
+  {id:"g06",part:"grammar_vocab",skillTag:"modals",cefrLevel:"B1",difficulty:2,prompt:"You ____ smoke here — it's a hospital.",choices:["mustn't","don't have to","needn't","wouldn't"],answerIndex:0,explanation:"ห้ามทำ (prohibition) ใช้ mustn't",ref:"CEFR B1"},
+  {id:"g07",part:"grammar_vocab",skillTag:"phrasal-verbs",cefrLevel:"B1",difficulty:3,prompt:"Please ____ the form and return it to the office.",choices:["fill in","fill up","fill out for","fill off"],answerIndex:0,explanation:"กรอกแบบฟอร์ม = fill in (หรือ fill out) — ตัวเลือกที่ถูกที่สุดคือ fill in",ref:"CEFR B1"},
+  {id:"g08",part:"grammar_vocab",skillTag:"vocabulary-collocation",cefrLevel:"B2",difficulty:4,prompt:"The new policy had a significant ____ on small businesses.",choices:["affect","effect","effort","impactful"],answerIndex:1,explanation:"ต้องการคำนาม → effect (affect เป็นกริยา); collocation: have an effect on",ref:"CEFR B2"},
+  {id:"g09",part:"grammar_vocab",skillTag:"word-formation",cefrLevel:"B2",difficulty:4,prompt:"Her argument was completely ____; nobody could disagree.",choices:["convince","convincing","convinced","convincingly"],answerIndex:1,explanation:"ต้องการ adjective ขยาย argument → convincing (น่าเชื่อถือ)",ref:"CEFR B2"},
+  {id:"g10",part:"grammar_vocab",skillTag:"tenses",cefrLevel:"B2",difficulty:4,prompt:"I'm exhausted — I ____ all day.",choices:["work","worked","have been working","had worked"],answerIndex:2,explanation:"การกระทำต่อเนื่องจนถึงปัจจุบันและเห็นผล → present perfect continuous",ref:"CEFR B2"},
+  {id:"g11",part:"grammar_vocab",skillTag:"prepositions",cefrLevel:"B1",difficulty:3,prompt:"She's very good ____ solving problems quickly.",choices:["in","on","at","with"],answerIndex:2,explanation:"good at + V-ing",ref:"CEFR B1"},
+  {id:"g12",part:"grammar_vocab",skillTag:"vocabulary-collocation",cefrLevel:"B1",difficulty:3,prompt:"Can you ____ a decision by Friday?",choices:["make","do","take","give"],answerIndex:0,explanation:"collocation: make a decision",ref:"CEFR B1"},
+
+  // ---- Reading ----
+  {id:"r01",part:"reading",skillTag:"main-idea",cefrLevel:"A2",difficulty:2,
+   passage:"Lina works from home three days a week. She says it saves her two hours of travel each day, and she feels less tired. However, she sometimes misses talking to her colleagues face to face.",
+   prompt:"What is the passage mainly about?",choices:["Lina's daily travel route","The good and bad points of working from home","Why Lina is always tired","Lina's colleagues"],answerIndex:1,explanation:"เนื้อหารวมข้อดี (ประหยัดเวลา) และข้อเสีย (คิดถึงเพื่อน) ของ work from home",ref:"CEFR A2"},
+  {id:"r02",part:"reading",skillTag:"detail",cefrLevel:"A2",difficulty:2,
+   passage:"The museum opens at 9 a.m. on weekdays and 10 a.m. at weekends. It closes at 5 p.m. every day except Friday, when it stays open until 8 p.m.",
+   prompt:"When does the museum close on Friday?",choices:["5 p.m.","8 p.m.","9 a.m.","10 a.m."],answerIndex:1,explanation:"ข้อความระบุว่า Friday เปิดถึง 8 p.m.",ref:"CEFR A2"},
+  {id:"r03",part:"reading",skillTag:"inference",cefrLevel:"B1",difficulty:3,
+   passage:"Tom checked his bag twice before leaving. At the airport, he reached for his passport but his hand found nothing. His face went pale.",
+   prompt:"What can we infer about Tom?",choices:["He was excited to travel","He had forgotten his passport","He was meeting a friend","He had lost his bag"],answerIndex:1,explanation:"ล้วงหากระเป๋าแล้วไม่เจอ + หน้าซีด → อนุมานว่าลืม/ทำพาสปอร์ตหาย",ref:"CEFR B1"},
+  {id:"r04",part:"reading",skillTag:"vocabulary-in-context",cefrLevel:"B1",difficulty:3,
+   passage:"The instructions were so vague that nobody knew exactly what to do, and the team wasted an entire morning guessing.",
+   prompt:"In this context, \"vague\" is closest in meaning to:",choices:["clear","unclear","short","long"],answerIndex:1,explanation:"ผลคือไม่มีใครรู้ว่าต้องทำอะไร → vague = ไม่ชัดเจน (unclear)",ref:"CEFR B1"},
+  {id:"r05",part:"reading",skillTag:"main-idea",cefrLevel:"B2",difficulty:4,
+   passage:"While many assume that multitasking boosts productivity, a growing body of research suggests the opposite. Each time we switch tasks, the brain needs time to refocus, and these small delays accumulate. Far from saving time, constant switching may quietly drain it.",
+   prompt:"What is the writer's main point?",choices:["Multitasking always saves time","Multitasking may actually reduce productivity","The brain cannot focus at all","Research is unreliable"],answerIndex:1,explanation:"ผู้เขียนแย้งความเชื่อว่า multitasking ดี โดยชี้ว่ามันอาจลดประสิทธิภาพ",ref:"CEFR B2"},
+  {id:"r06",part:"reading",skillTag:"inference",cefrLevel:"B2",difficulty:5,
+   passage:"The café had changed. The hand-written menus were gone, replaced by glowing screens, and the old owner's photographs no longer hung by the door. Maya ordered her usual coffee, but it no longer tasted the same.",
+   prompt:"What does the passage suggest about Maya's feelings?",choices:["She prefers the new design","She feels a sense of loss","She dislikes coffee now","She is meeting the owner"],answerIndex:1,explanation:"รายละเอียดของเก่าที่หายไป + 'no longer tasted the same' สื่อความรู้สึกสูญเสีย/โหยหา",ref:"CEFR B2"},
+
+  // ---- Listening (script-based for now) ----
+  {id:"l01",part:"listening",skillTag:"specific-info",cefrLevel:"A2",difficulty:2,
+   audioScript:"Woman: Excuse me, what time does the next train to Oxford leave?\nMan: The 10:15 has just gone, so the next one is at 10:45 from platform 3.",
+   prompt:"When does the next train leave?",choices:["10:15","10:45","11:15","3:00"],answerIndex:1,explanation:"ผู้ชายบอกว่ารถ 10:15 เพิ่งออก รอบถัดไป 10:45",ref:"CEFR A2"},
+  {id:"l02",part:"listening",skillTag:"gist",cefrLevel:"B1",difficulty:3,
+   audioScript:"Speaker: Thank you all for coming. Today I won't talk about the budget — that's next week. Instead, I'd like to focus on our new recycling plan and how each team can help.",
+   prompt:"What is the talk mainly about?",choices:["The budget","A recycling plan","Hiring new staff","A holiday schedule"],answerIndex:1,explanation:"ผู้พูดบอกชัดว่าวันนี้เน้น recycling plan (ไม่ใช่ budget)",ref:"CEFR B1"},
+  {id:"l03",part:"listening",skillTag:"detail",cefrLevel:"B1",difficulty:3,
+   audioScript:"Man: I'd like to book a table for four, please.\nWoman: Of course. For tonight?\nMan: No, for tomorrow at 7:30.",
+   prompt:"When does the man want the table?",choices:["Tonight at 7:30","Tomorrow at 7:30","Tonight for four","Tomorrow morning"],answerIndex:1,explanation:"ผู้ชายแก้เป็น 'tomorrow at 7:30'",ref:"CEFR B1"},
+  {id:"l04",part:"listening",skillTag:"specific-info",cefrLevel:"B2",difficulty:4,
+   audioScript:"Tutor: For the assignment, the word count is fifteen hundred words. You can lose marks for going more than ten percent over, so keep it under sixteen-fifty.",
+   prompt:"What is the maximum acceptable word count?",choices:["1,500","1,650","1,000","2,000"],answerIndex:1,explanation:"1,500 +10% = 1,650 (อาจารย์ย้ำ 'under sixteen-fifty')",ref:"CEFR B2"},
+  {id:"l05",part:"listening",skillTag:"inference",cefrLevel:"B2",difficulty:5,
+   audioScript:"Woman: So, how was the new restaurant?\nMan: Well... the view was lovely, and the staff were friendly. (pause) Let's just say I won't be rushing back for the food.",
+   prompt:"What does the man imply about the food?",choices:["It was excellent","It was disappointing","It was expensive","It was spicy"],answerIndex:1,explanation:"'won't be rushing back for the food' เป็นการพูดเลี่ยง สื่อว่าอาหารไม่ดี (ผิดหวัง)",ref:"CEFR B2"},
+];
+
+const PART_LABEL = {grammar_vocab:"Grammar & Vocab",reading:"Reading",listening:"Listening"};
+const PART_COLOR = {grammar_vocab:"var(--grammar)",reading:"var(--reading)",listening:"var(--listening)"};
+const LEVEL_VAL = {A2:1,B1:2,B2:3};
+function iconUse(name, cls="ui-icon"){return `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;}
+
+/* ---------- State (localStorage) ---------- */
+const KEY="eng_quiz_state_v1";
+let S = load();
+function load(){
+  try{const r=JSON.parse(localStorage.getItem(KEY));if(r)return r;}catch(e){}
+  return {attempts:[],skillStats:{},reviewQueue:[],targetDiff:2,streak:0,sinceWrong:{},qcount:0};
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+
+/* ---------- Skill stats helpers ---------- */
+function stat(tag){
+  if(!S.skillStats[tag]) S.skillStats[tag]={skillTag:tag,seen:0,correct:0,wrong:0,mastery:0.5,lastWrongAt:null};
+  return S.skillStats[tag];
+}
+function recordAnswer(q,correct){
+  const st=stat(q.skillTag);
+  st.seen++; correct?st.correct++:st.wrong++;
+  // EWMA mastery
+  st.mastery = +(st.mastery*0.7 + (correct?1:0)*0.3).toFixed(3);
+  if(!correct){st.lastWrongAt=new Date().toISOString(); if(!S.reviewQueue.includes(q.id))S.reviewQueue.push(q.id);}
+  else {S.reviewQueue=S.reviewQueue.filter(id=>id!==q.id);}
+  S.attempts.push({questionId:q.id,correct,timestamp:new Date().toISOString()});
+  // adaptive difficulty
+  if(correct){S.streak++; if(S.streak>=3){S.targetDiff=Math.min(5,S.targetDiff+1);S.streak=0;}}
+  else {S.streak=0; if(q.difficulty>=4)S.targetDiff=Math.max(1,S.targetDiff-1);}
+  // age the review counters
+  for(const id in S.sinceWrong) S.sinceWrong[id]++;
+  if(!correct) S.sinceWrong[q.id]=0;
+  S.qcount++;
+  save();
+}
+
+/* ---------- Adaptive selection ---------- */
+let sessionPart="all";
+let lastId=null;
+function pickNext(){
+  const pool = BANK.filter(q=> sessionPart==="all" || q.part===sessionPart);
+  // 1) review queue items that have "rested" a few questions
+  const dueReview = pool.filter(q=> S.reviewQueue.includes(q.id) && (S.sinceWrong[q.id]??99)>=3 && q.id!==lastId);
+  if(dueReview.length){ return weakestFirst(dueReview); }
+  // 2) otherwise pick near target difficulty, weakness-first
+  let cand = pool.filter(q=>q.id!==lastId);
+  if(!cand.length) cand=pool;
+  // score: prefer close to targetDiff + low mastery skill + not-recently-seen
+  cand = cand.map(q=>{
+    const m = stat(q.skillTag).mastery;
+    const distance = Math.abs(q.difficulty - S.targetDiff);
+    const seen = stat(q.skillTag).seen;
+    const score = (1-m)*3            // weak skill priority
+                + (3-distance)        // difficulty match
+                - Math.min(seen,4)*0.3 // variety
+                + Math.random()*0.8;   // jitter
+    return {q,score};
+  }).sort((a,b)=>b.score-a.score);
+  return cand[0].q;
+}
+function weakestFirst(list){
+  // weak-but-fixable: low mastery, lower difficulty first
+  return list.map(q=>({q,k:stat(q.skillTag).mastery*2 + q.difficulty*0.4}))
+             .sort((a,b)=>a.k-b.k)[0].q;
+}
+
+/* ---------- B2 readiness estimate ---------- */
+function b2Estimate(){
+  // weighted mastery across B1/B2 skills seen, scaled to a 0-700-ish EnglishScore-style band
+  const tags=Object.values(S.skillStats);
+  if(!tags.length || S.attempts.length<4) return null;
+  const totalSeen=tags.reduce((a,t)=>a+t.seen,0);
+  if(!totalSeen) return null;
+  const wMastery=tags.reduce((a,t)=>a+t.mastery*t.seen,0)/totalSeen; // 0..1
+  // accuracy on B2-difficulty items
+  const b2q=new Set(BANK.filter(q=>q.cefrLevel==="B2").map(q=>q.id));
+  const b2att=S.attempts.filter(a=>b2q.has(a.questionId));
+  const b2acc=b2att.length? b2att.filter(a=>a.correct).length/b2att.length : wMastery;
+  const blended=wMastery*0.6 + b2acc*0.4;            // 0..1
+  const score=Math.round(180 + blended*420);          // ~180..600 EnglishScore-style
+  let band="A2", reach=false;
+  if(score>=400){band="B2";reach=true;}
+  else if(score>=300)band="B1";
+  else band="A2";
+  return {score,band,blended,reach};
+}
+
+/* ---------- Rendering: HOME ---------- */
+function renderHome(){
+  const total=S.attempts.length;
+  const correct=S.attempts.filter(a=>a.correct).length;
+  document.getElementById("s-ans").textContent=total;
+  document.getElementById("s-acc").textContent= total? Math.round(correct/total*100)+"%" : "—";
+  document.getElementById("s-rev").textContent=S.reviewQueue.length;
+  renderFocus(total,correct);
+
+  const est=b2Estimate();
+  if(est){
+    document.getElementById("h-score").textContent=est.score;
+    document.getElementById("h-band").textContent= est.reach? "ถึงเกณฑ์ B2 / 400+" : "≈ ระดับ "+est.band;
+    document.getElementById("h-fill").style.width=Math.min(100,Math.round(est.score/400*100))+"%";
+    document.getElementById("h-note").textContent= est.reach
+      ? "ประเมินว่าพร้อมสอบ B2 — ฝึกรักษาระดับ + ทบทวนจุดอ่อนที่เหลือ"
+      : "ทำต่อเรื่อย ๆ ระบบจะดันความยากขึ้นเมื่อคุณพร้อม";
+  }else{
+    document.getElementById("h-score").textContent="—";
+    document.getElementById("h-band").textContent="ทำอีกสัก 4 ข้อเพื่อประเมิน";
+    document.getElementById("h-fill").style.width="0%";
+  }
+  renderWeak();
+}
+function renderFocus(total,correct){
+  const seen=Object.values(S.skillStats).filter(t=>t.seen>0).sort((a,b)=>a.mastery-b.mastery);
+  const weak=seen[0];
+  const focus=weak?weak.skillTag.replace(/-/g," "):"Mixed";
+  const acc=total?Math.round(correct/total*100):0;
+  document.getElementById("brief-focus").textContent=focus;
+  document.getElementById("plan-attack").textContent=weak?focus:"Adaptive mix";
+  document.getElementById("focus-score").textContent=total?acc+"%":"B2";
+  document.getElementById("focus-title").textContent=weak
+    ? "Attack: "+focus
+    : "Start with an adaptive mix";
+  document.getElementById("focus-copy").textContent=weak
+    ? "ฝึกจุดอ่อนนี้ก่อน แล้วปิดด้วยคิวทบทวนที่ตอบพลาด"
+    : "ทำสั้น ๆ 10-12 นาที ระบบจะหา weak spot ให้เอง";
+}
+function renderWeak(){
+  const tags=Object.values(S.skillStats).filter(t=>t.seen>0).sort((a,b)=>a.mastery-b.mastery).slice(0,5);
+  const box=document.getElementById("wk-list");
+  if(!tags.length){box.innerHTML='<div class="empty">ยังไม่มีข้อมูล — ทำแบบฝึกสักหน่อยเพื่อให้ระบบรู้จุดอ่อน</div>';document.getElementById("wk-lnk").style.display="none";return;}
+  document.getElementById("wk-lnk").style.display="block";
+  box.innerHTML=tags.map(t=>{
+    const pct=Math.round(t.mastery*100);
+    const col= pct<40?"var(--red)":pct<70?"var(--amber)":"var(--green)";
+    return `<div class="wk"><span class="dot" style="background:${col}"></span>
+      <span class="nm">${t.skillTag.replace(/-/g,' ')}</span>
+      <span class="bar"><i style="width:${pct}%;background:${col}"></i></span>
+      <span class="pct">${pct}%</span></div>`;
+  }).join("");
+}
+
+/* ---------- Quiz flow ---------- */
+let cur=null, answered=false;
+function pickPart(el,part){document.querySelectorAll(".part").forEach(p=>p.classList.remove("sel"));el.classList.add("sel");sessionPart=part;}
+function drillWeak(){
+  // jump into a session focused on weakest skill
+  const tags=Object.values(S.skillStats).filter(t=>t.seen>0).sort((a,b)=>a.mastery-b.mastery);
+  if(tags.length){ const wk=tags[0].skillTag; const q=BANK.find(x=>x.skillTag===wk); if(q)sessionPart=q.part; }
+  startQuiz();
+}
+function startQuiz(){show("quiz");loadQuestion();}
+function loadQuestion(){
+  cur=pickNext(); answered=false; lastId=cur.id;
+  document.getElementById("q-fb").className="fb";
+  document.getElementById("q-next").style.display="none";
+  document.getElementById("q-count").textContent="Q"+(S.attempts.length+1);
+  document.getElementById("q-prog").style.width=Math.min(100,(S.qcount%10)*10)+"%";
+
+  const pb=document.getElementById("q-part");
+  pb.textContent=PART_LABEL[cur.part]; pb.style.color=PART_COLOR[cur.part]; pb.style.background="#fff"; pb.style.border="1px solid var(--line)";
+  document.getElementById("q-cefr").textContent=cur.cefrLevel;
+  document.getElementById("q-skill").textContent=cur.skillTag.replace(/-/g,' ');
+  document.getElementById("q-diff").innerHTML=[1,2,3,4,5].map(n=>`<i class="${n<=cur.difficulty?'on':''}"></i>`).join("");
+
+  const pas=document.getElementById("q-passage");
+  if(cur.passage){pas.style.display="block";pas.textContent=cur.passage;}else pas.style.display="none";
+  const au=document.getElementById("q-audio");
+  if(cur.audioScript){au.style.display="block";au.classList.remove("open");document.getElementById("q-script").textContent=cur.audioScript;}else au.style.display="none";
+
+  document.getElementById("q-prompt").textContent=cur.prompt;
+  const ch=document.getElementById("q-choices");
+  ch.innerHTML=cur.choices.map((c,i)=>`<button class="choice" data-i="${i}" onclick="answer(${i})"><span class="key">${"ABCD"[i]}</span><span>${c}</span></button>`).join("");
+}
+function answer(i){
+  if(answered)return; answered=true;
+  const correct=i===cur.answerIndex;
+  const btns=[...document.querySelectorAll("#q-choices .choice")];
+  btns.forEach((b,idx)=>{b.disabled=true;
+    if(idx===cur.answerIndex)b.classList.add("correct");
+    else if(idx===i)b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+  const fb=document.getElementById("q-fb");
+  fb.className="fb show "+(correct?"ok":"no");
+  document.getElementById("q-fb-h").innerHTML=iconUse(correct?"check":"x")+"<span>"+(correct?"ถูกต้อง!":"ยังไม่ถูก")+"</span>";
+  document.getElementById("q-fb-ex").textContent=cur.explanation;
+  document.getElementById("q-fb-tag").textContent=`${cur.skillTag.replace(/-/g,' ')} · ${cur.cefrLevel}`+(cur.ref?` · ${cur.ref}`:"");
+  document.getElementById("q-next").style.display="block";
+  recordAnswer(cur,correct);
+  if(!correct) toast("เพิ่มเข้าคิวทบทวนแล้ว");
+}
+function nextQuestion(){loadQuestion();}
+function goHome(){show("home");renderHome();}
+
+/* ---------- Stats sheet ---------- */
+function openStats(){
+  const total=S.attempts.length,correct=S.attempts.filter(a=>a.correct).length;
+  document.getElementById("st-ans").textContent=total;
+  document.getElementById("st-cor").textContent=correct;
+  document.getElementById("st-acc").textContent=total?Math.round(correct/total*100)+"%":"—";
+  document.getElementById("st-diff").textContent=S.targetDiff+" / 5";
+  document.getElementById("st-rev").textContent=S.reviewQueue.length;
+  const est=b2Estimate();document.getElementById("st-b2").textContent=est?est.score+" ("+est.band+")":"—";
+  document.getElementById("sheet").classList.add("show");
+}
+function closeSheet(){document.getElementById("sheet").classList.remove("show");}
+function resetAll(){if(confirm("ล้างข้อมูลการเรียนทั้งหมด?")){localStorage.removeItem(KEY);S=load();closeSheet();goHome();toast("ล้างข้อมูลแล้ว");}}
+
+/* ---------- View switch + nav ---------- */
+function show(v){
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+  document.getElementById("view-"+v).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("on"));
+  document.getElementById("nav-"+(v==="quiz"?"drill":"home")).classList.add("on");
+  window.scrollTo(0,0);
+}
+let _t;
+function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("show");clearTimeout(_t);_t=setTimeout(()=>el.classList.remove("show"),1800);}
+
+/* ---------- Glow cursor (vault drop-in) ---------- */
+const _glow=document.getElementById('glow-cursor');
+document.addEventListener('mousemove',e=>{_glow.style.left=e.clientX+'px';_glow.style.top=e.clientY+'px';});
+document.addEventListener('mousedown',()=>_glow.classList.add('click'));
+document.addEventListener('mouseup',()=>_glow.classList.remove('click'));
+function toggleGlow(){document.body.classList.toggle('glow-on');}
+document.addEventListener('keydown',e=>{
+  if(e.key==='g'||e.key==='G'){if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;e.preventDefault();toggleGlow();}
+});
+
+/* ---------- init ---------- */
+renderHome();
+</script>
+</body>
+</html>
