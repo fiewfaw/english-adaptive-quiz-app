@@ -423,13 +423,27 @@ function deviceId(){
   if(!d){d="dev-"+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem("eng_quiz_device",d);}
   return d;
 }
-function syncAttempt(q,correct){
-  if(!SYNC_URL)return;
+// no-cors + text/plain = simple request, no preflight; promise resolves on delivery
+function postAttempt(payload){
+  return fetch(SYNC_URL,{method:"POST",mode:"no-cors",body:JSON.stringify(payload),headers:{"Content-Type":"text/plain;charset=utf-8"},keepalive:true});
+}
+// send every attempt not yet synced (covers backfill of plays made before sync existed / offline)
+let _flushing=false;
+async function flushUnsynced(){
+  if(!SYNC_URL||_flushing)return;
+  _flushing=true;
   try{
-    const body=JSON.stringify({key:SYNC_KEY,deviceId:deviceId(),questionId:q.id,part:q.part,skillTag:q.skillTag,cefrLevel:q.cefrLevel,difficulty:q.difficulty,correct:correct,timestamp:new Date().toISOString()});
-    // text/plain = simple request → no CORS preflight to Apps Script
-    fetch(SYNC_URL,{method:"POST",body,headers:{"Content-Type":"text/plain;charset=utf-8"},keepalive:true}).catch(()=>{});
-  }catch(e){}
+    const dev=deviceId();
+    for(const a of S.attempts){
+      if(a._synced)continue;
+      const q=BANK.find(x=>x.id===a.questionId);
+      if(!q){a._synced=true;continue;}
+      try{
+        await postAttempt({key:SYNC_KEY,deviceId:dev,questionId:q.id,part:q.part,skillTag:q.skillTag,cefrLevel:q.cefrLevel,difficulty:q.difficulty,correct:!!a.correct,timestamp:a.timestamp||new Date().toISOString()});
+        a._synced=true; save();
+      }catch(e){break;}  // network down → leave unsynced, retry next load
+    }
+  }finally{_flushing=false;}
 }
 function exportProgress(){
   try{
@@ -463,7 +477,7 @@ function recordAnswer(q,correct){
   if(!correct) S.sinceWrong[q.id]=0;
   S.qcount++;
   save();
-  syncAttempt(q,correct);
+  flushUnsynced();
 }
 
 /* ---------- Adaptive selection ---------- */
@@ -687,6 +701,7 @@ document.addEventListener('keydown',e=>{
 
 /* ---------- init ---------- */
 renderHome();
+flushUnsynced();  // backfill any attempts saved before sync existed / while offline
 </script>
 </body>
 </html>
