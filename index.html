@@ -228,6 +228,7 @@ body.glow-on .glow-toggle .led{background:var(--gold);box-shadow:0 0 10px var(--
 <svg class="icon-sprite" aria-hidden="true">
   <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.2a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.2a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.2a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.2a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
   <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
   <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h8l-1 8 11-14h-8l1-6Z"/></symbol>
@@ -365,7 +366,7 @@ body.glow-on .glow-toggle .led{background:var(--gold);box-shadow:0 0 10px var(--
 <div class="sheet" id="sheet" onclick="if(event.target===this)closeSheet()">
   <div class="panel">
     <h3><svg class="ui-icon" aria-hidden="true"><use href="#i-chart"></use></svg><span>สถิติการเรียน</span></h3>
-    <p>ข้อมูลเก็บในเครื่อง (localStorage) — ไม่ส่งออกที่ไหน</p>
+    <p>ข้อมูลเก็บในเครื่อง (localStorage) + sync ผลตอบขึ้นระบบให้คุณแอนวิเคราะห์จุดอ่อน</p>
     <div class="kv"><span>ทำทั้งหมด</span><span id="st-ans">0</span></div>
     <div class="kv"><span>ตอบถูก</span><span id="st-cor">0</span></div>
     <div class="kv"><span>ความแม่นยำ</span><span id="st-acc">—</span></div>
@@ -373,6 +374,8 @@ body.glow-on .glow-toggle .led{background:var(--gold);box-shadow:0 0 10px var(--
     <div class="kv"><span>คิวทบทวน</span><span id="st-rev">0</span></div>
     <div class="kv"><span>คะแนนประเมิน B2</span><span id="st-b2">—</span></div>
     <div style="height:18px"></div>
+    <button class="btn btn-ghost" onclick="exportProgress()"><svg class="ui-icon" aria-hidden="true"><use href="#i-download"></use></svg>ส่งออกความคืบหน้า (JSON)</button>
+    <div style="height:10px"></div>
     <button class="btn btn-ghost" onclick="resetAll()"><svg class="ui-icon" aria-hidden="true"><use href="#i-trash"></use></svg>ล้างข้อมูลทั้งหมด</button>
     <div style="height:10px"></div>
     <button class="btn btn-ghost" onclick="closeSheet()">ปิด</button>
@@ -412,6 +415,33 @@ function load(){
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
 
+/* ---------- Progress sync (optional, fire-and-forget) ---------- */
+const SYNC_URL="https://script.google.com/macros/s/AKfycbwUIS48PbXSZ3jHOid3GbO5u7M2Lstw6eoERA12SIlVFejelPRLXzCPmPYor_0Am1VY/exec";
+const SYNC_KEY="eng-quiz-2026";
+function deviceId(){
+  let d=localStorage.getItem("eng_quiz_device");
+  if(!d){d="dev-"+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem("eng_quiz_device",d);}
+  return d;
+}
+function syncAttempt(q,correct){
+  if(!SYNC_URL)return;
+  try{
+    const body=JSON.stringify({key:SYNC_KEY,deviceId:deviceId(),questionId:q.id,part:q.part,skillTag:q.skillTag,cefrLevel:q.cefrLevel,difficulty:q.difficulty,correct:correct,timestamp:new Date().toISOString()});
+    // text/plain = simple request → no CORS preflight to Apps Script
+    fetch(SYNC_URL,{method:"POST",body,headers:{"Content-Type":"text/plain;charset=utf-8"},keepalive:true}).catch(()=>{});
+  }catch(e){}
+}
+function exportProgress(){
+  try{
+    const payload={device:deviceId(),exportedAt:new Date().toISOString(),state:S};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download="eng-quiz-progress-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
+    toast("ส่งออกความคืบหน้าแล้ว");
+  }catch(e){toast("ส่งออกไม่สำเร็จ");}
+}
+
 /* ---------- Skill stats helpers ---------- */
 function stat(tag){
   if(!S.skillStats[tag]) S.skillStats[tag]={skillTag:tag,seen:0,correct:0,wrong:0,mastery:0.5,lastWrongAt:null};
@@ -433,6 +463,7 @@ function recordAnswer(q,correct){
   if(!correct) S.sinceWrong[q.id]=0;
   S.qcount++;
   save();
+  syncAttempt(q,correct);
 }
 
 /* ---------- Adaptive selection ---------- */
